@@ -472,10 +472,10 @@ class Config
       keyPath = arguments[0]
 
     if scope?
-      value = @getRawScopedValue(scope, keyPath)
-      value ? @getRawValue(keyPath)
+      value = @getRawScopedValue(scope, keyPath, options)
+      value ? @getRawValue(keyPath, options)
     else
-      @getRawValue(keyPath)
+      @getRawValue(keyPath, options)
 
   # Essential: Sets the value for a configuration setting.
   #
@@ -804,8 +804,8 @@ class Config
       catch e
         console.warn("'#{keyPath}' could not be set. Attempted value: #{JSON.stringify(value)}; Schema: #{JSON.stringify(@getSchema(keyPath))}")
 
-  getRawValue: (keyPath) ->
-    value = @getRawScopedValue(['xxx'], keyPath)
+  getRawValue: (keyPath, options) ->
+    value = @getRawScopedValue(['xxx'], keyPath, options)
     defaultValue = _.valueForKeyPath(@defaultSettings, keyPath)
 
     if value?
@@ -928,9 +928,9 @@ class Config
     @usersScopedSettings.add @scopedSettingsStore.addProperties(source, settingsBySelector, @usersScopedSettingPriority)
     @emitter.emit 'did-change'
 
-  getRawScopedValue: (scopeDescriptor, keyPath) ->
+  getRawScopedValue: (scopeDescriptor, keyPath, options) ->
     scopeDescriptor = ScopeDescriptor.fromObject(scopeDescriptor)
-    @scopedSettingsStore.getPropertyValue(scopeDescriptor.getScopeChain(), keyPath)
+    @scopedSettingsStore.getPropertyValue(scopeDescriptor.getScopeChain(), keyPath, options)
 
   observeScopedKeyPath: (scope, keyPath, callback) ->
     oldValue = @get(keyPath, {scope})

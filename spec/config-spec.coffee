@@ -35,6 +35,29 @@ describe "Config", ->
       atom.config.setDefaults("bar", baz: 7)
       expect(atom.config.get("bar.baz")).toEqual {a: 3}
 
+    describe "when a 'sources' option is specified", ->
+      it "only retrieves values from the specified sources", ->
+        atom.config.set("x.y", 1, scopeSelector: ".foo", source: "a")
+        atom.config.set("x.y", 2, source: "b")
+        atom.config.set("x.y", 3, source: "c")
+        atom.config.setSchema("x.y", type: "integer", default: 4)
+
+        expect(atom.config.get("x.y", sources: ["a"], scope: [".foo"])).toBe 1
+        expect(atom.config.get("x.y", sources: ["b"], scope: [".foo"])).toBe 2
+        expect(atom.config.get("x.y", sources: ["c"], scope: [".foo"])).toBe 3
+        expect(atom.config.get("x.y", sources: ["x"], scope: [".foo"])).toBe 4
+
+    describe "when an 'excludeSources' option is specified", ->
+      it "only retrieves values from the specified sources", ->
+        atom.config.set("x.y", 1, scopeSelector: ".foo", source: "a")
+        atom.config.set("x.y", 2, source: "b")
+        atom.config.set("x.y", 3, source: "c")
+        atom.config.setSchema("x.y", type: "integer", default: 4)
+
+        expect(atom.config.get("x.y", excludeSources: ["a"], scope: [".foo"])).toBe 3
+        expect(atom.config.get("x.y", excludeSources: ["c"])).toBe 2
+        expect(atom.config.get("x.y", excludeSources: ["b", "c"])).toBe 4
+
   describe ".set(keyPath, value)", ->
     it "allows a key path's value to be written", ->
       expect(atom.config.set("foo.bar.baz", 42)).toBe true
