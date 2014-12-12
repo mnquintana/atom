@@ -528,6 +528,9 @@ class Config
     else
       [keyPath, value, options] = arguments
       scopeSelector = options?.scopeSelector
+      source = options?.source
+
+    source ?= @getUserConfigPath()
 
     unless value is undefined
       try
@@ -536,9 +539,9 @@ class Config
         return false
 
     if scopeSelector?
-      @setRawScopedValue(scopeSelector, keyPath, value)
+      @setRawScopedValue(source, scopeSelector, keyPath, value)
     else
-      @setRawValue(keyPath, value)
+      @setRawValue(source, keyPath, value)
 
     @save() unless @configFileHasErrors
     true
@@ -813,12 +816,12 @@ class Config
 
     value
 
-  setRawValue: (keyPath, value) ->
+  setRawValue: (source, keyPath, value) ->
     defaultValue = _.valueForKeyPath(@defaultSettings, keyPath)
     value = undefined if _.isEqual(defaultValue, value)
 
     oldValue = _.clone(@get(keyPath))
-    @setRawScopedValue('*', keyPath, value)
+    @setRawScopedValue(source, '*', keyPath, value)
     newValue = @get(keyPath)
     @emitter.emit 'did-change', {oldValue, newValue, keyPath} unless _.isEqual(newValue, oldValue)
 
@@ -914,7 +917,7 @@ class Config
       disposable.dispose()
       @emitter.emit 'did-change'
 
-  setRawScopedValue: (selector, keyPath, value) ->
+  setRawScopedValue: (source, selector, keyPath, value) ->
     if keyPath?
       newValue = {}
       setValueAtKeyPath(newValue, keyPath, value)
@@ -922,7 +925,7 @@ class Config
 
     settingsBySelector = {}
     settingsBySelector[selector] = value
-    @usersScopedSettings.add @scopedSettingsStore.addProperties(@getUserConfigPath(), settingsBySelector, @usersScopedSettingPriority)
+    @usersScopedSettings.add @scopedSettingsStore.addProperties(source, settingsBySelector, @usersScopedSettingPriority)
     @emitter.emit 'did-change'
 
   getRawScopedValue: (scopeDescriptor, keyPath) ->
