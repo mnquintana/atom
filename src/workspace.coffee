@@ -685,6 +685,8 @@ class Workspace extends Model
 
   # Destroy the active pane item or the active pane if it is empty.
   destroyActivePaneItemOrEmptyPane: ->
+    unless @getPaneItems().length
+      atom.workspaceView.trigger 'window:close'
     if @getActivePaneItem()? then @destroyActivePaneItem() else @destroyActivePane()
 
   # Increase the editor font size by 1px.
